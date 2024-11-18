@@ -1,0 +1,80 @@
+syntax="proto3";
+
+package apicontract;
+
+option go_package = "/apicontract";
+
+message ApiRequest{
+    MsgHeader header = 1;
+    MsgPayload payload = 2;
+}
+ 
+message MsgHeader{
+    string deviceId = 1;
+    string messageId = 2;
+    string msgTimestamp = 3;
+    Action action = 4;
+}
+ 
+enum Action{
+    REGN_NONCE_POST = 0;
+    REGN_DEVICEREGISTRATION_POST = 1;
+    SESSION_POST = 2;
+}
+ 
+message MsgPayload{
+    PayloadMetadata metadata = 1;
+    string data = 2;
+}
+ 
+message PayloadMetadata{
+    string hmac = 1;
+    Alg alg = 2;
+    RsaEncryptionType enc = 3;
+    string sessionKey = 4;
+    string thumbPrint = 5;
+    string iv = 6;
+}
+ 
+enum Alg{
+    AES_256_CBC = 0;
+    AES_256_GCM = 1;
+    AES_128_CBC = 2;
+    AES_128_GCM = 3;
+    AES_192_CBC = 4;
+    AES_192_GCM = 5;
+}
+ 
+enum RsaEncryptionType {
+    RSA_UNSPECIFIED = 0;       
+    RSA_PKCS1_1024 = 1;        
+    RSA_PKCS1_2048 = 2;        
+    RSA_PKCS1_3072 = 3;        
+    RSA_PKCS1_4096 = 4;        
+    RSA_OAEP_1024 = 5;         
+    RSA_OAEP_2048 = 6;         
+    RSA_OAEP_3072 = 7;         
+    RSA_OAEP_4096 = 8;         
+}
+ 
+message ApiResponse {
+    MsgHeader header=1;
+    oneof payload{
+        SuccessResponse success = 2;   
+        ErrorResponse error = 3;
+    }
+}
+ 
+message SuccessResponse {
+    MsgPayload payload = 1;
+}
+ 
+message ErrorResponse {
+    string errorCode = 1;
+    string message = 2;
+    string localLanguageErrorMsg = 3;
+}
+ 
+service GatewayService{
+    rpc processRequest(ApiRequest) returns (ApiResponse);
+}
